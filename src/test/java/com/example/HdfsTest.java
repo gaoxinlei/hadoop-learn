@@ -1,11 +1,18 @@
 package com.example;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 
 
 public class HdfsTest {
@@ -70,6 +77,45 @@ public class HdfsTest {
         //第二个参数是递归，若要删除非空文件夹必须指定为true。
         system.delete(path,true);
         LOGGER.info("成功删除了文件夹");
+    }
+
+    @Test
+    public void testRename() throws  Exception{
+        System.setProperty("HADOOP_USER_NAME", "hadoop");
+        Path origin = new Path("/user/hadoop/jedis.chm");
+        Path goal = new Path("/user/hadoop/jedis-api.chm");
+        origin.getFileSystem(new Configuration()).rename(origin,goal);
+        LOGGER.info("成功重命名了源文件:{}到目标文件:{}",origin,goal);
+
+    }
+
+    @Test
+    public void testListFiles() throws Exception{
+        System.setProperty("HADOOP_USER_NAME", "hadoop");
+        Path path = new Path("/user/hadoop");
+        RemoteIterator<LocatedFileStatus> iterator = path.getFileSystem(new Configuration()).listFiles(path, true);
+        while(iterator.hasNext()){
+            LocatedFileStatus next = iterator.next();
+            BlockLocation[] blockLocations = next.getBlockLocations();
+            LOGGER.info("查到文件或目录：{},块位置：{},访问时间:{},块大小:{},组：{},持有者:{},许可:{},副本:{}",
+                    next.getPath().getName(),
+                    blockLocations,
+                    new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+                            .format(new Date(next.getAccessTime())),
+                    next.getBlockSize(),
+                    next.getGroup(),next.getOwner(),next.getPermission(),next.getReplication());
+            for(BlockLocation location:blockLocations){
+                String[] cachedHosts = location.getCachedHosts();
+                String[] hosts = location.getHosts();
+                long length = location.getLength();
+                String[] names = location.getNames();
+                long offset = location.getOffset();
+                String[] topologyPaths = location.getTopologyPaths();
+                LOGGER.info("数据块信息，块缓存机器:{},块所在机器:{},块长:{},块名称:{},块偏移量：{},块拓补路径:{}",
+                        Arrays.asList(cachedHosts),Arrays.asList(hosts),length,Arrays.asList(names),
+                        offset,Arrays.asList(topologyPaths));
+            }
+        }
     }
 
 }
