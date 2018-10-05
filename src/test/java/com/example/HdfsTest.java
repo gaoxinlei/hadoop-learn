@@ -2,14 +2,19 @@ package com.example;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.io.IOUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -117,5 +122,24 @@ public class HdfsTest {
             }
         }
     }
+    //用io流上传
+    @Test
+    public void testUploadWithStream()throws Exception{
+        System.setProperty("HADOOP_USER_NAME", "hadoop");
+        FileSystem system = FileSystem.get(new Configuration());
+        Path dist = new Path("/user/hadoop/Cell.chm");
+        FSDataOutputStream outputStream = system.create(dist);
+        FileInputStream inputStream = new FileInputStream(new File("E:\\java\\all_api\\Cell.chm"));
+        try {
+            IOUtils.copyBytes(inputStream,outputStream,1024*1024);
+        } catch (IOException e) {
+            LOGGER.error("流拷贝异常:{}",e);
+            throw new RuntimeException(e);
+        }finally {
+            IOUtils.closeStream(inputStream);
+            IOUtils.closeStream(outputStream);
+        }
+    }
+
 
 }
