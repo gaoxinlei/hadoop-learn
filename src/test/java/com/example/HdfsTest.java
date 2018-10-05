@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public class HdfsTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HdfsTest.class);
@@ -25,5 +27,17 @@ public class HdfsTest {
         LOGGER.info("文件系统：{}",system);
         system.copyFromLocalFile(src,desc);
         LOGGER.info("成功将源文件:{}拷贝到:{}",src.getName(),desc.getName());
+    }
+
+    @Test
+    public void testDownload() throws Exception {
+        //1.配置类。
+        Configuration configuration = new Configuration();
+        //2.文件
+        Path src = new Path("hdfs://stack:9000/user/hadoop/jquery.chm");
+        Path dest = new Path("E:\\java\\jquery.chm");
+        FileSystem system = src.getFileSystem(configuration);
+        system.copyToLocalFile(false,src,dest,true);
+        LOGGER.info("成功将文件:{}下载到:{}",src,dest);
     }
 }
