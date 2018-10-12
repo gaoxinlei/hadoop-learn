@@ -5,7 +5,8 @@ data/elasticsearch
 
 # maven ignore
 target/
-
+# log ignore
+logs/
 # eclipse ignore
 .settings/
 .project
