@@ -1,12 +1,11 @@
 package com.example.driver;
 
-import com.example.mapper.WordCountMapper;
+import com.example.bean.FlowBean;
+import com.example.mapper.FlowMapper;
 import com.example.partitioner.PhonePartitioner;
-import com.example.partitioner.WordCountSimplePartioner;
-import com.example.reducer.WordCountReducer;
+import com.example.reducer.FlowReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -17,34 +16,32 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * wordcount实例driver
+ * 统计流量驱动类
  */
-public class WordCountDriver {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WordCountDriver.class);
+public class PhoneFlowDriver {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhoneFlowDriver.class);
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration configuration = new Configuration();
         configuration.set("mapreduce.framework.name", "yarn");
-		configuration.set("yarn.resourcemanager.hostname", "stack");
+        configuration.set("yarn.resourcemanager.hostname", "stack");
         Job job = Job.getInstance(configuration);
         String path = System.getProperty("user.dir");
         LOGGER.info("path:{}",path);
-        job.setJarByClass(WordCountDriver.class);
 
-        job.setMapperClass(WordCountMapper.class);
-        job.setReducerClass(WordCountReducer.class);
-        //设置分区。
+        job.setJarByClass(PhoneFlowDriver.class);
+
+        job.setMapperClass(FlowMapper.class);
+        job.setReducerClass(FlowReducer.class);
+        //分区汇总需要保证map与reduce输出同类。
+//        job.setCombinerClass(FlowReducer.class);
         job.setPartitionerClass(PhonePartitioner.class);
         job.setNumReduceTasks(5);
 
-        //局部汇总,若设置它，必须保证reduce输出与map输出同类型。
-        job.setCombinerClass(WordCountReducer.class);
-
-        //输出等设置。
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
-
+        job.setMapOutputValueClass(FlowBean.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(Text.class);
+
         FileInputFormat.setInputPaths(job,new Path(args[0]));
         FileOutputFormat.setOutputPath(job,new Path(args[1]));
         LOGGER.info("input path:{},output path:{}",args[0],args[1]);

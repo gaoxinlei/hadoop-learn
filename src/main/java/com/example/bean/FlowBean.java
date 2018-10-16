@@ -1,11 +1,12 @@
 package com.example.bean;
 
+import lombok.Data;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
+@Data
 public class FlowBean implements WritableComparable<FlowBean>{
 
     private long upFlow;
@@ -34,6 +35,6 @@ public class FlowBean implements WritableComparable<FlowBean>{
 
     @Override
     public int compareTo(FlowBean other) {
-        return Long.compare(this.upFlow,other.upFlow);
+        return Long.compare(this.sumFlow,other.sumFlow);
     }
 }
