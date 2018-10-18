@@ -2,7 +2,6 @@ package com.example.partitioner;
 
 import com.example.bean.FlowBean;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 public class PhonePartitioner extends Partitioner<Text,FlowBean> {
